@@ -17,3 +17,4 @@ def choose_country(podstawowy, number):
                 return country
     print("Kraj o podanym numerze nie istnieje.")
     return None
+
