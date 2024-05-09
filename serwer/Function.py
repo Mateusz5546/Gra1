@@ -24,9 +24,15 @@ def recruit_army(kraj_id, liczba_jednostek):
     cur.execute("SELECT drewno, stal, jedzenie FROM kraj WHERE id = ?", (kraj_id,))
     resources = cur.fetchone()
     drewno, stal, jedzenie = resources
-    required_drewno = 10 * liczba_jednostek
-    required_stal = 5 * liczba_jednostek
-    required_jedzenie = 3 * liczba_jednostek
+    con.commit()
+
+    cur = con.cursor()
+    cur.execute("SELECT drewno, stal, jedzenie FROM typ_jednostki")
+    resources_jednostki =cur.fetchone()
+    drewno_jednostki , stal_jednostki , jedzenie_jednostki  = resources_jednostki
+    required_drewno = drewno_jednostki * liczba_jednostek
+    required_stal = stal_jednostki * liczba_jednostek
+    required_jedzenie = jedzenie_jednostki * liczba_jednostek
 
     # required_drewno -= int(required_drewno)
     # required_stal -= int(required_stal)
@@ -49,16 +55,20 @@ def recruit_army(kraj_id, liczba_jednostek):
         return {
             "error": "Insufficient resources to recruit armies."
         }
-def build_structure(kraj_id, structure_id):
+def build_structure(budynek_id, structure_id):
+
     con = sqlite3.connect("../gra.db")
     cur = con.cursor()
+    cur.execute("SELECT drewno, stal, jedzenie FROM typ_budynku WHERE id = ?", (budynek_id,))
+    required = cur.fetchone()
+    required_drewno, required_stal, required_jedzenie =required
+    con.commit()
 
-    cur.execute("SELECT drewno, stal, jedzenie FROM kraj WHERE id = ?", (kraj_id,))
+    cur = con.cursor()
+    cur.execute("SELECT drewno, stal, jedzenie FROM kraj WHERE id = ?", (budynek_id,))
     resources = cur.fetchone()
     drewno, stal, jedzenie = resources
-    required_drewno = 50
-    required_stal = 30
-    required_jedzenie = 20
+
 
     if drewno >= required_drewno and stal >= required_stal and jedzenie >= required_jedzenie:
         new_drewno = drewno - required_drewno
@@ -67,10 +77,10 @@ def build_structure(kraj_id, structure_id):
 
 
         cur.execute("UPDATE kraj SET drewno = ?, stal = ?, jedzenie = ? WHERE id = ?",
-                    (new_drewno, new_stal, new_jedzenie, kraj_id))
+                    (new_drewno, new_stal, new_jedzenie, budynek_id))
 
         recruit_buff = 0.1
-        cur.execute("UPDATE kraj SET army_buff = ? WHERE id = ?", (recruit_buff, kraj_id))
+        cur.execute("UPDATE kraj SET army_buff = ? WHERE id = ?", (recruit_buff, budynek_id))
 
         con.commit()
         con.close()

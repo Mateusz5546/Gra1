@@ -111,11 +111,7 @@ def tabela_kraj_jednostka():
                       PRIMARY KEY(jednostki_id,kraj_id))''')
 
 def czy_istnieje_baza():
-    try:
-        with sqlite3.connect("../gra.db") as con:
-            return True
-    except sqlite3.Error:
-        return False
+    return os.path.isfile("../gra.db")
 def zainicjuj():
     if not czy_istnieje_baza():
         tabela()
