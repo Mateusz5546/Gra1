@@ -17,4 +17,96 @@ def choose_country(podstawowy, number):
                 return country
     print("Kraj o podanym numerze nie istnieje.")
     return None
+def recruit_army(kraj_id, liczba_jednostek):
+    con = sqlite3.connect("gra.db")
+    cur = con.cursor()
 
+    cur.execute("SELECT drewno, stal, jedzenie, army_buff FROM kraj WHERE id = ?", (kraj_id,))
+    resources, army_buff = cur.fetchone()[:-1], cur.fetchone()[-1]
+    drewno, stal, jedzenie = resources
+    required_drewno = 10 * liczba_jednostek
+    required_stal = 5 * liczba_jednostek
+    required_jedzenie = 3 * liczba_jednostek
+
+    required_drewno -= int(required_drewno * army_buff)
+    required_stal -= int(required_stal * army_buff)
+    required_jedzenie -= int(required_jedzenie * army_buff)
+
+    if drewno >= required_drewno and stal >= required_stal and jedzenie >= required_jedzenie:
+        new_drewno = drewno - required_drewno
+        new_stal = stal - required_stal
+        new_jedzenie = jedzenie - required_jedzenie
+
+        cur.execute("UPDATE kraj SET drewno = ?, stal = ?, jedzenie = ? WHERE id = ?",
+                    (new_drewno, new_stal, new_jedzenie, kraj_id))
+
+        con.commit()
+        con.close()
+        print("Successfully recruited {} armies.".format(liczba_jednostek))
+    else:
+        print("Insufficient resources to recruit armies.")
+def build_structure(kraj_id, structure_id):
+    con = sqlite3.connect("gra.db")
+    cur = con.cursor()
+
+    cur.execute("SELECT drewno, stal, jedzenie FROM kraj WHERE id = ?", (kraj_id,))
+    resources = cur.fetchone()
+    drewno, stal, jedzenie = resources
+    required_drewno = 50
+    required_stal = 30
+    required_jedzenie = 20
+
+    if drewno >= required_drewno and stal >= required_stal and jedzenie >= required_jedzenie:
+        new_drewno = drewno - required_drewno
+        new_stal = stal - required_stal
+        new_jedzenie = jedzenie - required_jedzenie
+
+
+        cur.execute("UPDATE kraj SET drewno = ?, stal = ?, jedzenie = ? WHERE id = ?",
+                    (new_drewno, new_stal, new_jedzenie, kraj_id))
+
+        recruit_buff = 0.1
+        cur.execute("UPDATE kraj SET army_buff = ? WHERE id = ?", (recruit_buff, kraj_id))
+
+        con.commit()
+        con.close()
+        print("Successfully built the structure and applied a recruitment buff.")
+    else:
+        print("Insufficient resources to build the structure.")
+def select_units(kraj_id):
+    con = sqlite3.connect("gra.db")
+    cur = con.cursor()
+
+    cur.execute("SELECT liczba FROM kraj_jednostka WHERE kraj_id = ?", (kraj_id,))
+    num_units = cur.fetchone()[0]
+
+    selected_units = int(input("Enter the number of units you want to use for the attack (max {}): ".format(num_units)))
+
+    if selected_units <= num_units:
+        return selected_units
+    else:
+        print("Invalid number of units selected.")
+    return 0
+
+def attack_opponent(attacker_id, defender_id, selected_units):
+    con = sqlite3.connect("gra.db")
+    cur = con.cursor()
+
+    cur.execute("SELECT liczba FROM kraj_jednostka WHERE kraj_id = ? AND jednostka_id = ?", (attacker_id, 1))
+    attacker_units = cur.fetchone()[0]
+
+    cur.execute("SELECT liczba FROM kraj_jednostka WHERE kraj_id = ? AND jednostka_id = ?", (defender_id, 1))
+    defender_units = cur.fetchone()[0]
+
+    if selected_units <= attacker_units:
+        if selected_units >= defender_units:
+            print("Congratulations! You have won the battle.")
+            cur.execute("UPDATE kraj_jednostka SET liczba = ? WHERE kraj_id = ? AND jednostka_id = ?", (attacker_units - selected_units, attacker_id, 1))
+            cur.execute("UPDATE kraj_jednostka SET liczba = ? WHERE kraj_id = ? AND jednostka_id = ?", (0, defender_id, 1))
+        else:
+            print("Unfortunately, you have lost the battle.")
+            cur.execute("UPDATE kraj_jednostka SET liczba = ? WHERE kraj_id = ? AND jednostka_id = ?", (attacker_units - selected_units, attacker_id, 1))
+    else:
+        print("You don't have enough units to perform this attack.")
+    con.commit()
+    con.close()
