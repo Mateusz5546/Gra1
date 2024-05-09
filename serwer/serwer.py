@@ -17,6 +17,9 @@ main.zainicjuj()
 @app.get("/countries")
 def countries():
     return Function.name_country()
+@app.get("/build_structure/{kraj_id}/{budynek_id}")
+def build_structure(budynek_id:int,kraj_id:int):
+    return Function.build_structure(budynek_id,kraj_id)
 @app.get("/recruit_army")
 def recruit_army(kraj_id:int,liczba_jednostek:int):
     return Function.recruit_army(kraj_id,liczba_jednostek)
