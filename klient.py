@@ -14,14 +14,20 @@ def sprawdz_kraj(id_wybrane):
     data = res.json()
     for id, nazwa, drewno, stal, jedzenie in data:
         if id == id_wybrane:
+            print("Kraj został wybrany pomyślnie")
             break
     print(id, nazwa, drewno, stal, jedzenie)
-def print_kraje():
+def sprawdz_kraj():
     url = "http://127.0.0.1:8000"
     res = requests.get(url + "/countries")
     data = res.json()
     for id, nazwa, _, _, _ in data:
         print(id, nazwa)
+    id_wybrane = int(input("Wybierz kraj: "))
+    while id_wybrane not in [country[0] for country in data]:
+        print("To nie jest poprawny numer kraju")
+        id_wybrane = int(input("Wybierz kraj: "))
+    return id_wybrane
 def print_builds():
     url = "http://127.0.0.1:8000"
     res = requests.get(url + "/structures")
@@ -43,11 +49,12 @@ def print_dodane_surowce(kraj_id):
     jedzenie = data['jedzenie']
     print(drewno,stal,jedzenie)
 
-print_kraje()
-id_wybrane = int(input("Wybierz kraj"))
+def recruit():
+    pass
+
+id_wybrane = sprawdz_kraj()
 print_resorces(id_wybrane)
 
-sprawdz_kraj(id_wybrane)
 
 print_builds()
 budynek_id = int(input("Wybierz co chcesz zbudować: "))

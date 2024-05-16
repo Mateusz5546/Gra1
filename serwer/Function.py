@@ -96,7 +96,7 @@ def build_structure(budynek_id,kraj_id):
         con.commit()
         con.close()
         return {
-            "message": "Successfully built the structure and applied a recruitment buff."
+            "message": "Successfully built the structure."
         }
     else:
         return {
