@@ -102,6 +102,24 @@ def build_structure(budynek_id,kraj_id):
         return {
             "error": "Brak surowcow"
         }
+
+def resorces(kraj_id):
+    con = sqlite3.connect("../gra.db")
+    cur = con.cursor()
+    cur.execute("SELECT drewno, stal, jedzenie FROM kraj WHERE id = ?", (kraj_id,))
+    resources = cur.fetchone()
+    drewno, stal, jedzenie = resources
+    add_drewno = drewno + 1000
+    add_stal = stal + 2000
+    add_jedzenie = jedzenie + 3000
+
+    cur.execute("UPDATE kraj SET drewno = ?, stal = ?, jedzenie = ? WHERE id = ?",
+                (add_drewno, add_stal, add_jedzenie, kraj_id))
+    con.commit()
+    con.close()
+    return {
+        'drewno': add_drewno,'stal':add_stal,'jedzenie':add_jedzenie
+    }
 def select_units(kraj_id):
     con = sqlite3.connect("../gra.db")
     cur = con.cursor()
@@ -114,7 +132,9 @@ def select_units(kraj_id):
     if selected_units <= num_units:
         return selected_units
     else:
-        print("Invalid number of units selected.")
+        return {
+            "message": "Invalid number of units selected."
+        }
     return 0
 
 def attack_opponent(attacker_id, defender_id, selected_units):

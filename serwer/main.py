@@ -50,7 +50,7 @@ def przpis_budynek():
     con = sqlite3.connect("../gra.db")
     cur = con.cursor()
 
-    with open('budynki.txt', 'r') as file:
+    with open('budynki.txt', 'r', encoding="UTF-8") as file:
         for line in file:
             values = line.strip().split(',')
             cur.execute("INSERT INTO typ_budynku (id, nazwa, drewno, stal,jedzenie) VALUES (?, ?, ?, ?, ?)",
