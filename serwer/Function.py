@@ -32,6 +32,7 @@ def recruit_army(kraj_id, liczba_jednostek):
     drewno, stal, jedzenie = resources
     con.commit()
 
+
     cur = con.cursor()
     cur.execute("SELECT drewno, stal, jedzenie FROM typ_jednostki")
     resources_jednostki =cur.fetchone()
@@ -53,9 +54,16 @@ def recruit_army(kraj_id, liczba_jednostek):
                     (new_drewno, new_stal, new_jedzenie, kraj_id))
 
         con.commit()
+        cur = con.cursor()
+        cur.execute("SELECT liczba FROM kraj_jednostka WHERE kraj_id = ?", (kraj_id,))
+        tabela_liczba_jednostek = cur.fetchone()
+        new_liczba_jednostek = tabela_liczba_jednostek + liczba_jednostek
+        cur.execute("UPDATE kraj_jednostka SET liczba = ?, Where kraj_id = ?", (new_liczba_jednostek, kraj_id))
+        con.commit()
         con.close()
         return {
-            "message": "Successfully recruited {} armies.".format(liczba_jednostek)
+            "message": "Successfully recruited {} armies.".format(liczba_jednostek),
+            'resources': [required_drewno, required_stal, required_jedzenie]
         }
     else:
         return {
@@ -136,3 +144,52 @@ def attack_opponent(attacker_id, defender_id, selected_units):
     con.close()
     con.close()
 
+
+# def game_turn(kraj_id):
+#     turn_counter = 0
+#
+#     while True:
+#         turn_counter += 1
+#         print("\nTurn", turn_counter)
+#         print("Turn Options:")
+#         print("1. Recruit Army")
+#         print("2. Build Structure")
+#         print("3. Select Army")
+#         print("4. Attack Opponent")
+#         print("5. End Turn")
+#
+#         choice = input("Enter your choice: ")
+#
+#         if choice == "1":
+#             liczba_jednostek = int(input("Enter the number of armies to recruit: "))
+#             result = recruit_army(kraj_id, liczba_jednostek)
+#             if "error" in result:
+#                 print("Error:", result["error"])
+#             else:
+#                 print("Success:", result["message"])
+#
+#         elif choice == "2":
+#             budynek_id = int(input("Enter the ID of the structure to build: "))
+#             result = build_structure(budynek_id, kraj_id)
+#             if "error" in result:
+#                 print("Error:", result["error"])
+#             else:
+#                 print("Success:", result["message"])
+#
+#         elif choice == "3":
+#             selected_units = select_units(kraj_id)
+#             print("Selected {} units for attack.".format(selected_units))
+#
+#         elif choice == "4":
+#             defender_id = int(input("Enter the ID of the opponent to attack: "))
+#             selected_units = select_units(kraj_id)
+#             attack_opponent(kraj_id, defender_id, selected_units)
+#
+#         elif choice == "5":
+#             print("Ending turn", turn_counter)
+#             print("Summary of actions:")
+#             print("Resources remaining after turn:", name_country_resorces(kraj_id))
+#             break
+#
+#         else:
+#             print("Invalid choice. Please try again.")

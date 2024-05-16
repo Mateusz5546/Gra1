@@ -23,6 +23,6 @@ def country(kraj_id):
 @app.get("/build_structure/{kraj_id}/{budynek_id}")
 def build_structure(kraj_id:int,budynek_id:int):
     return Function.build_structure(budynek_id,kraj_id)
-@app.get("/recruit_army")
+@app.get("/recruit_army/{kraj_id}/{licba_jednostek}")
 def recruit_army(kraj_id:int,liczba_jednostek:int):
     return Function.recruit_army(kraj_id,liczba_jednostek)
