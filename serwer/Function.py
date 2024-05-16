@@ -10,6 +10,11 @@ def name_country_resorces(kraj_id):
         cur = con.cursor()
         cur.execute("SELECT * FROM kraj Where id=?", (kraj_id,))
         return cur.fetchone()
+def name_build():
+    with sqlite3.connect("../gra.db") as con:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM typ_budynku")
+        return cur.fetchall()
 
 def choose_country(podstawowy, number):
     with open(podstawowy, 'r') as plik:
@@ -124,14 +129,20 @@ def attack_opponent(attacker_id, defender_id, selected_units):
 
     if selected_units <= attacker_units:
         if selected_units >= defender_units:
-            print("Congratulations! You have won the battle.")
             cur.execute("UPDATE kraj_jednostka SET liczba = ? WHERE kraj_id = ? AND jednostka_id = ?", (attacker_units - selected_units, attacker_id, 1))
             cur.execute("UPDATE kraj_jednostka SET liczba = ? WHERE kraj_id = ? AND jednostka_id = ?", (0, defender_id, 1))
+            return {
+                "message": "Congratulations! You have won the battle."
+            }
         else:
-            print("Unfortunately, you have lost the battle.")
             cur.execute("UPDATE kraj_jednostka SET liczba = ? WHERE kraj_id = ? AND jednostka_id = ?", (attacker_units - selected_units, attacker_id, 1))
+            return {
+                "message": "Unfortunately, you have lost the battle."
+            }
     else:
-        print("You don't have enough units to perform this attack.")
+        return {
+            "message": "You don't have enough units to perform this attack."
+        }
     con.commit()
     con.close()
     con.close()

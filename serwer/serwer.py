@@ -20,6 +20,9 @@ def countries():
 @app.get("/country/{kraj_id}")
 def country(kraj_id):
     return Function.name_country_resorces(kraj_id)
+@app.get("/structures")
+def structure():
+    return Function.name_build()
 @app.get("/build_structure/{kraj_id}/{budynek_id}")
 def build_structure(kraj_id:int,budynek_id:int):
     return Function.build_structure(budynek_id,kraj_id)
