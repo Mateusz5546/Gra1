@@ -58,9 +58,16 @@ def recruit_army(kraj_id, liczba_jednostek):
                     (new_drewno, new_stal, new_jedzenie, kraj_id))
 
         con.commit()
+        cur = con.cursor()
+        cur.execute("SELECT liczba FROM kraj_jednostka WHERE kraj_id = ?", (kraj_id,))
+        tabela_liczba_jednostek = cur.fetchone()
+        new_liczba_jednostek = tabela_liczba_jednostek + liczba_jednostek
+        cur.execute("UPDATE kraj_jednostka SET liczba = ?, Where kraj_id = ?", (new_liczba_jednostek, kraj_id))
+        con.commit()
         con.close()
         return {
-            "message": "Successfully recruited {} armies.".format(liczba_jednostek)
+            "message": "Successfully recruited {} armies.".format(liczba_jednostek),
+            'resources': [required_drewno, required_stal, required_jedzenie]
         }
     else:
         return {

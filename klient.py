@@ -49,8 +49,11 @@ def print_dodane_surowce(kraj_id):
     jedzenie = data['jedzenie']
     print(drewno,stal,jedzenie)
 
-def recruit():
-    pass
+def recruit(kraj_id,liczba_jednostek):
+    url = "http://127.0.0.1:8000"
+    res = requests.get(url + f"/recruit_army/{kraj_id}/{liczba_jednostek}")
+    data = res.json()
+    print("Zostały zużyte surowce: ",data['resources'])
 
 id_wybrane = sprawdz_kraj()
 print_resorces(id_wybrane)
@@ -60,6 +63,8 @@ print_builds()
 budynek_id = int(input("Wybierz co chcesz zbudować: "))
 build(id_wybrane,budynek_id)
 print_resorces(id_wybrane)
+liczba = int(input("Ile chcesz jednostek: "))
+recruit(id_wybrane,liczba)
 
 print_dodane_surowce(id_wybrane)
 
