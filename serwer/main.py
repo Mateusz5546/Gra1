@@ -16,7 +16,8 @@ def tabela():
                       nazwa TEXT NOT NULL,
                       drewno INTEGER,
                       stal INTEGER,
-                      jedzenie INTEGER)''')
+                      jedzenie INTEGER,
+                      liczba_jednostek INTEGER)''')
         else:
             print("Tabela 'kraj' już istnieje.")
 
@@ -28,7 +29,7 @@ def przpis_kraj():
     with open('podstawowy.txt', 'r') as file:
         for line in file:
             values = line.strip().split(',')
-            cur.execute("INSERT INTO kraj (id, nazwa, drewno, stal,jedzenie) VALUES (?, ?, ?, ?, ?)",
+            cur.execute("INSERT INTO kraj (id, nazwa, drewno, stal,jedzenie,liczba_jednostek) VALUES (?, ?, ?, ?, ?,?)",
                         [v.strip() for v in values])
 
     con.commit()
@@ -108,7 +109,7 @@ def tabela_kraj_jednostka():
                         kraj_id INTEGER NOT NULL,
                       FOREIGN KEY(jednostka_id) REFERENCES typ_jednostki(id),
                       FOREIGN KEY(kraj_id) REFERENCES kraj(id),
-                      PRIMARY KEY(jednostki_id,kraj_id))''')
+                      PRIMARY KEY(jednostka_id,kraj_id))''')
 
 def czy_istnieje_baza():
     return os.path.isfile("../gra.db")
@@ -121,3 +122,4 @@ def zainicjuj():
         tabela_typ_jednostki()
         przpis_jednostka()
         tabela_kraj_budynku()
+        tabela_kraj_jednostka()

@@ -59,10 +59,10 @@ def recruit_army(kraj_id, liczba_jednostek):
 
         con.commit()
         cur = con.cursor()
-        cur.execute("SELECT liczba FROM kraj_jednostka WHERE kraj_id = ?", (kraj_id,))
-        tabela_liczba_jednostek = cur.fetchone()
+        cur.execute("SELECT liczba_jednostek FROM kraj WHERE id = ?", (kraj_id,))
+        tabela_liczba_jednostek = cur.fetchone()[0]
         new_liczba_jednostek = tabela_liczba_jednostek + liczba_jednostek
-        cur.execute("UPDATE kraj_jednostka SET liczba = ?, Where kraj_id = ?", (new_liczba_jednostek, kraj_id))
+        cur.execute("UPDATE kraj SET liczba_jednostek = ?, Where id = ?", (new_liczba_jednostek, kraj_id))
         con.commit()
         con.close()
         return {
@@ -86,16 +86,26 @@ def build_structure(budynek_id,kraj_id):
     cur.execute("SELECT drewno, stal, jedzenie FROM kraj WHERE id = ?", (kraj_id,))
     resources = cur.fetchone()
     drewno, stal, jedzenie = resources
+    con.commit()
 
 
     if drewno >= required_drewno and stal >= required_stal and jedzenie >= required_jedzenie:
         new_drewno = drewno - required_drewno
         new_stal = stal - required_stal
         new_jedzenie = jedzenie - required_jedzenie
+        cur.execute("SELECT liczba FROM kraj_budynek WHERE kraj_id = ? AND budynek_id = ?",(kraj_id, budynek_id,))
+        liczba_budynkow = cur.fetchone()[0]
+        if liczba_budynkow is None:
+            cur.execute("INSERT INTO kraj_budynek VALUES (?, ?, ?)",
+                        (1, budynek_id, kraj_id))
+        else:
+            new_liczba = liczba_budynkow + 1
+            cur.execute("UPDATE kraj_budynek SET liczba = ? WHERE kraj_id = ? AND budynek_id = ?",
+                        (new_liczba, kraj_id, budynek_id))
 
 
         cur.execute("UPDATE kraj SET drewno = ?, stal = ?, jedzenie = ? WHERE id = ?",
-                    (new_drewno, new_stal, new_jedzenie, budynek_id))
+                    (new_drewno, new_stal, new_jedzenie, kraj_id))
 
         # recruit_buff = 0.1
         # cur.execute("UPDATE kraj SET army_buff = ? WHERE id = ?", (recruit_buff, budynek_id))
@@ -145,32 +155,34 @@ def select_units(kraj_id):
     return 0
 
 def attack_opponent(attacker_id, defender_id, selected_units):
-    con = sqlite3.connect("../gra.db")
-    cur = con.cursor()
+    with sqlite3.connect("../gra.db") as con:
+        cur = con.cursor()
 
-    cur.execute("SELECT liczba FROM kraj_jednostka WHERE kraj_id = ? AND jednostka_id = ?", (attacker_id, 1))
-    attacker_units = cur.fetchone()[0]
+        cur.execute("SELECT liczba FROM kraj_jednostka WHERE kraj_id = ? AND jednostka_id = ?", (attacker_id, 1))
+        attacker_units = cur.fetchone()[0]
 
-    cur.execute("SELECT liczba FROM kraj_jednostka WHERE kraj_id = ? AND jednostka_id = ?", (defender_id, 1))
-    defender_units = cur.fetchone()[0]
+        cur.execute("SELECT liczba FROM kraj_jednostka WHERE kraj_id = ? AND jednostka_id = ?", (defender_id, 1))
+        defender_units = cur.fetchone()[0]
 
-    if selected_units <= attacker_units:
-        if selected_units >= defender_units:
-            cur.execute("UPDATE kraj_jednostka SET liczba = ? WHERE kraj_id = ? AND jednostka_id = ?", (attacker_units - selected_units, attacker_id, 1))
-            cur.execute("UPDATE kraj_jednostka SET liczba = ? WHERE kraj_id = ? AND jednostka_id = ?", (0, defender_id, 1))
-            return {
-                "message": "Congratulations! You have won the battle."
-            }
+        if selected_units <= attacker_units:
+            if selected_units >= defender_units:
+                cur.execute("UPDATE kraj_jednostka SET liczba = ? WHERE kraj_id = ? AND jednostka_id = ?", (attacker_units - selected_units, attacker_id, 1))
+                cur.execute("UPDATE kraj_jednostka SET liczba = ? WHERE kraj_id = ? AND jednostka_id = ?", (0, defender_id, 1))
+                return {
+                    "message": "Congratulations! You have won the battle."
+                }
+            else:
+                cur.execute("UPDATE kraj_jednostka SET liczba = ? WHERE kraj_id = ? AND jednostka_id = ?", (attacker_units - selected_units, attacker_id, 1))
+                return {
+                    "message": "Unfortunately, you have lost the battle."
+                }
         else:
-            cur.execute("UPDATE kraj_jednostka SET liczba = ? WHERE kraj_id = ? AND jednostka_id = ?", (attacker_units - selected_units, attacker_id, 1))
             return {
-                "message": "Unfortunately, you have lost the battle."
+                "message": "You don't have enough units to perform this attack."
             }
-    else:
-        return {
-            "message": "You don't have enough units to perform this attack."
-        }
-    con.commit()
-    con.close()
-    con.close()
+    # con.commit()
+    # con.close()
+    # con.close()
 
+
+build_structure(1,1)
