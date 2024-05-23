@@ -3,7 +3,7 @@ import requests
 
 url = "http://127.0.0.1:8000"
 
-def print_resorces(id_wybrane):
+def print_resources(id_wybrane):
     url = "http://127.0.0.1:8000"
     res2 = requests.get(url + f"/country/{id_wybrane}")
     data2 = res2.json()
@@ -55,18 +55,75 @@ def recruit(kraj_id,liczba_jednostek):
     data = res.json()
     print("Zostały zużyte surowce: ",data['resources'])
 
-id_wybrane = sprawdz_kraj()
-print_resorces(id_wybrane)
+def select_units(kraj_id):
+    url = "http://127.0.0.1:8000"
+    res = requests.get(url + f"/country/{kraj_id}")
+    data = res.json()
+    num_units = data[1]  # Assuming that units are in the second position of the response
+    selected_units = int(input(f"Enter the number of units you want to use for the attack (max {num_units}): "))
+    while selected_units > num_units:
+        print("Invalid number of units selected.")
+        selected_units = int(input(f"Enter the number of units you want to use for the attack (max {num_units}): "))
+    return selected_units
 
+def attack_opponent(attacker_id, defender_id, selected_units):
+    url = "http://127.0.0.1:8000"
+    res = requests.get(url + f"/attack_opponent?attacker_id={attacker_id}&defender_id={defender_id}&selected_units={selected_units}")
+    data = res.json()
+    print(data["message"])
 
-print_builds()
-budynek_id = int(input("Wybierz co chcesz zbudować: "))
-build(id_wybrane,budynek_id)
-print_resorces(id_wybrane)
-liczba = int(input("Ile chcesz jednostek: "))
-recruit(id_wybrane,liczba)
+def turn_menu():
+    print("\nWybierz akcję:")
+    print("1. Wyświetl zasoby")
+    print("2. Wyświetl budynki")
+    print("3. Zbuduj budynek")
+    print("4. Rekrutuj jednostki")
+    print("5. Dodaj surowce")
+    print("6. Wybierz jednostki do ataku")
+    print("7. Zaatakuj przeciwnika")
+    print("8. Zakończ turę")
+    choice = int(input("Wybór: "))
+    return choice
 
-print_dodane_surowce(id_wybrane)
+def play_turn(kraj_id):
+    while True:
+        choice = turn_menu()
+        if choice == 1:
+            print_resources(kraj_id)
+        elif choice == 2:
+            print_builds()
+        elif choice == 3:
+            print_builds()
+            budynek_id = int(input("Wybierz co chcesz zbudować: "))
+            build(kraj_id, budynek_id)
+            print_resources(kraj_id)
+        elif choice == 4:
+            liczba = int(input("Ile chcesz jednostek: "))
+            recruit(kraj_id, liczba)
+            print_resources(kraj_id)
+        elif choice == 5:
+            print_dodane_surowce(kraj_id)
+        elif choice == 6:
+            selected_units = select_units(kraj_id)
+            print(f"Wybrano {selected_units} jednostki do ataku.")
+        elif choice == 7:
+            defender_id = int(input("Wpisz ID kraju przeciwnika, który chcesz zaatakować: "))
+            selected_units = select_units(kraj_id)
+            attack_opponent(kraj_id, defender_id, selected_units)
+        elif choice == 8:
+            print("Tura zakończona.\n")
+            break
+        else:
+            print("Niepoprawny wybór, spróbuj ponownie.")
+
+if __name__ == "__main__":
+    id_wybrane = sprawdz_kraj()
+    while True:
+        play_turn(id_wybrane)
+        next_turn = input("Czy chcesz rozpocząć następną turę? (tak/nie): ")
+        if next_turn.lower() != 'tak':
+            print("Gra zakończona.")
+            break
 
 
 
